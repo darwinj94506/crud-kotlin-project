@@ -1,36 +1,70 @@
 package com.example.superherolist
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.superherolist.data.SuperHero
 import com.example.superherolist.databinding.ActivityMainBinding
+import com.example.superherolist.databinding.ActivityRootBinding
+import com.example.superherolist.databinding.FragmentMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    var superHeros = getSuperheros()
+    private lateinit var binding: ActivityRootBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        initReciclerView()
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_root)
+        supportFragmentManager.beginTransaction()
+            .add(R.id.container, MainFragment.newInstance(), "MainFragment")
+            .commit()
     }
-    fun initReciclerView(){
-        binding.rvSuperHero.layoutManager = LinearLayoutManager(this)
-        val adapter = HeroAdapter(superHeros)
-        binding.rvSuperHero.adapter = adapter
+}
+
+class MainFragment: Fragment() {
+
+    private val viewModel: MainViewModel by viewModels()
+    private lateinit var binding: FragmentMainBinding
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+
+        binding = FragmentMainBinding.inflate(inflater, container, false)
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+
+        viewModel.stateLogin.observe(viewLifecycleOwner) {
+
+            val intent = Intent(requireContext(), SuperHeroActivity::class.java)
+            requireContext().startActivity(intent)
+
+        }
+
+        return binding.root
+
     }
-    fun getSuperheros(): List<SuperHero>{
-        var superheros:List<SuperHero> = listOf(
-                SuperHero("Spiderman", "Marvel", "Peter Parker", "https://cursokotlin.com/wp-content/uploads/2017/07/spiderman.jpg"),
-                SuperHero("Daredevil", "Marvel", "Matthew Michael Murdock", "https://cursokotlin.com/wp-content/uploads/2017/07/daredevil.jpg"),
-                SuperHero("Wolverine", "Marvel", "James Howlett", "https://cursokotlin.com/wp-content/uploads/2017/07/logan.jpeg"),
-                SuperHero("Batman", "DC", "Bruce Wayne", "https://cursokotlin.com/wp-content/uploads/2017/07/batman.jpg"),
-                SuperHero("Thor", "Marvel", "Thor Odinson", "https://cursokotlin.com/wp-content/uploads/2017/07/thor.jpg"),
-                SuperHero("Flash", "DC", "Jay Garrick", "https://cursokotlin.com/wp-content/uploads/2017/07/flash.png"),
-                SuperHero("Green Lantern", "DC", "Alan Scott", "https://cursokotlin.com/wp-content/uploads/2017/07/green-lantern.jpg"),
-                SuperHero("Wonder Woman", "DC", "Princess Diana", "https://cursokotlin.com/wp-content/uploads/2017/07/wonder_woman.jpg")
-        )
-        return superheros
+
+    companion object {
+
+        fun newInstance(): MainFragment{
+            val args = Bundle()
+
+            val fragment = MainFragment()
+            fragment.arguments = args
+            return fragment
+        }
+
     }
+
 }
